@@ -79,16 +79,23 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        console.log('AuthProvider initializing, auth object:', auth);
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                setCurrentUser(user);
-                const role = await getUserRole(user.uid);
-                setUserRole(role);
-            } else if (!currentUser) {
-                setCurrentUser(null);
-                setUserRole(null);
+            console.log('onAuthStateChanged fired, user:', user);
+            try {
+                if (user) {
+                    setCurrentUser(user);
+                    const role = await getUserRole(user.uid);
+                    setUserRole(role);
+                } else if (!currentUser) {
+                    setCurrentUser(null);
+                    setUserRole(null);
+                }
+            } catch (err) {
+                console.error('Error in auth state handler:', err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         });
 
         return unsubscribe;
@@ -105,7 +112,8 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {/* DEBUG: render children regardless of loading to avoid blank page during auth init */}
+            {children}
         </AuthContext.Provider>
     );
 };
