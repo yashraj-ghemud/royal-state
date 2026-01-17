@@ -12,7 +12,7 @@ const AuthContext = createContext();
 
 // Hardcoded Admin Credentials
 const ADMIN_EMAIL = 'admin';
-const ADMIN_PASSWORD = 'dusing@2007';
+const ADMIN_PASSWORD = 'RoyalStay@Admin2026!';
 
 export const useAuth = () => {
     return useContext(AuthContext);
@@ -79,9 +79,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        console.log('AuthProvider initializing, auth object:', auth);
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            console.log('onAuthStateChanged fired, user:', user);
             try {
                 if (user) {
                     setCurrentUser(user);

@@ -86,6 +86,10 @@ const Auth = () => {
     const [introFading, setIntroFading] = useState(false);
     const [introSrc, setIntroSrc] = useState(window.innerWidth <= 768 ? '/phnauth.mp4' : '/proj.mp4');
 
+    // Light states for neon effect
+    const [lightOn, setLightOn] = useState(false);
+    const [lightFlash, setLightFlash] = useState(false);
+
     useEffect(() => {
         const handleResize = () => {
             // Only update video source if intro is still active
@@ -102,10 +106,22 @@ const Auth = () => {
         setIntroFading(true);
         // after fade completes remove intro overlay
         setTimeout(() => setIntroActive(false), 700);
+
+        // After 1 second, flash the torch and turn on neon glow
+        setTimeout(() => {
+            // Trigger flash animation
+            setLightFlash(true);
+            // After flash, keep light on
+            setTimeout(() => {
+                setLightFlash(false);
+                setLightOn(true);
+            }, 300);
+        }, 1000);
     };
 
     return (
         <div className="auth-container">
+            <div className={`glowing-light ${lightOn ? 'active' : ''} ${lightFlash ? 'flash' : ''}`} aria-hidden="true" />
             {/* Intro overlay: plays proj.mp4 once, then fades away */}
             {introActive && (
                 <div className={`intro-overlay ${introFading ? 'fade-out' : ''}`}>
@@ -135,11 +151,14 @@ const Auth = () => {
             {/* bottom/mobile video removed (keeps left video only) */}
 
             <motion.div
-                className={`auth-box auth-main ${introActive ? 'intro-playing' : ''}`}
+                className={`auth-box auth-main ${introActive ? 'intro-playing' : ''} ${lightOn ? 'neon-active' : ''} ${lightFlash ? 'flash' : ''}`}
                 initial="hidden"
                 animate="visible"
                 variants={fadeIn}
             >
+                {/* Light cone effect - lamp light scattering */}
+                <div className={`light-cone ${lightOn ? 'active' : ''} ${lightFlash ? 'flash' : ''}`}></div>
+
                 <div className="auth-header">
                     <h1>🏠 Royal Stay 1</h1>
                     <p>{isLogin ? 'Welcome Back!' : 'Create Your Account'}</p>
@@ -165,37 +184,37 @@ const Auth = () => {
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
-                        <label>Email</label>
                         <input
                             type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
+                            placeholder=" "
                             required
                         />
+                        <label>Email</label>
                     </div>
 
                     <div className="form-group">
-                        <label>Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
+                            placeholder=" "
                             required
                         />
+                        <label>Password</label>
                     </div>
 
                     {!isLogin && (
                         <div className="form-group">
-                            <label>Confirm Password</label>
                             <input
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Confirm your password"
+                                placeholder=" "
                                 required
                             />
+                            <label>Confirm Password</label>
                         </div>
                     )}
 

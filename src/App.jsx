@@ -10,7 +10,7 @@ import VideoBackground from './components/VideoBackground';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <VideoBackground />
         <div className="app">
