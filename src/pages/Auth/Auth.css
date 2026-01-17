@@ -3,24 +3,68 @@
 .auth-container {
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+    align-items: stretch;
+    padding: 0;
     position: relative;
+    overflow: hidden;
+}
+
+/* Intro overlay styles */
+.intro-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    z-index: 9999;
+    pointer-events: auto;
+    transition: opacity 0.7s ease, visibility 0.7s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.intro-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.intro-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* While intro is playing, gently hide/blur underlying auth content */
+.auth-main {
+    transition: opacity 0.7s ease, filter 0.7s ease;
+    opacity: 1;
+    filter: none;
+}
+
+.auth-main.intro-playing {
+    opacity: 0;
+    filter: blur(4px) saturate(0.8);
 }
 
 .auth-box {
     background: transparent;
-    /* fully transparent background */
     backdrop-filter: none;
-    /* remove blur */
     -webkit-backdrop-filter: none;
     border-radius: 25px;
     padding: 40px;
-    width: 100%;
-    max-width: 450px;
+    width: 50%;
+    max-width: 600px;
+    margin-left: auto;
+    /* push to right */
     border: none;
     box-shadow: none;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .auth-header {
@@ -241,26 +285,81 @@
 
 /* Auth-page specific video styles */
 .auth-video-background {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
     height: 100vh;
-    object-fit: contain;
-    /* show whole video */
+    object-fit: cover;
     object-position: center center;
-    z-index: -1000;
+    z-index: 1;
     pointer-events: none;
+    transition: transform 0.5s ease;
 }
 
 .auth-video-overlay {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100vh;
     background: linear-gradient(180deg,
-            rgba(255, 255, 255, 0.0) 0%,
-            rgba(255, 255, 255, 0.02) 50%,
-            rgba(255, 255, 255, 0.04) 100%);
-    z-index: -999;
+            rgba(0, 0, 0, 0.18) 0%,
+            rgba(0, 0, 0, 0.42) 50%,
+            rgba(0, 0, 0, 0.62) 100%);
+    z-index: 2;
     pointer-events: none;
+    transition: transform 0.5s ease;
+}
+
+
+/* Hover / interaction: symmetric shifting */
+.auth-container:hover .auth-video-background {
+    transform: translateX(-20px);
+}
+
+.auth-container:hover .auth-box {
+    transform: translateX(20px);
+}
+
+.auth-box {
+    transition: transform 0.5s ease;
+}
+
+/* Mobile: stack video on top, show bottom video as well */
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .auth-video-background {
+        position: relative;
+        width: 100%;
+        height: 40vh;
+        object-fit: cover;
+        z-index: 1;
+    }
+
+    .auth-video-overlay {
+        position: relative;
+        width: 100%;
+        height: 40vh;
+        z-index: 2;
+    }
+
+    /* removed bottom video styles (single left video is used) */
+
+    .auth-box {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 24px;
+        z-index: 5;
+    }
+
+    .auth-container:hover .auth-video-background,
+    .auth-container:hover .auth-box {
+        transform: none;
+    }
 }

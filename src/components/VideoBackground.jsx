@@ -3,12 +3,15 @@ import { useLocation } from 'react-router-dom';
 import './VideoBackground.css';
 
 const VideoBackground = ({ src = '/bg.mp4' }) => {
+    const location = useLocation();
+
+    // Do not render the global VideoBackground on the auth route
+    if (location && location.pathname && location.pathname.startsWith('/auth')) return null;
+
     const videoRef = useRef(null);
     const rafRef = useRef(null);
     const currentTimeRef = useRef(0);
     const targetTimeRef = useRef(0);
-
-    const location = useLocation();
 
     useEffect(() => {
         // if we're on the auth page, let that page render its own autoplaying looped video
@@ -16,6 +19,18 @@ const VideoBackground = ({ src = '/bg.mp4' }) => {
         const video = videoRef.current;
         if (!video) return;
 
+        // For home page, play as normal looped autoplay video (no scroll-scrubbing)
+        if (location && location.pathname === '/') {
+            video.muted = true;
+            video.loop = true;
+            video.autoplay = true;
+            // attempt to play; some browsers require user interaction unless muted
+            const p = video.play();
+            if (p && p.catch) p.catch(() => { });
+            return;
+        }
+
+        // Otherwise, keep the existing scroll-scrub behavior
         let isPlaying = false;
         const LERP = 0.08;
         const FRAME_RATE = 60;
@@ -76,7 +91,7 @@ const VideoBackground = ({ src = '/bg.mp4' }) => {
             window.removeEventListener('scroll', onScroll);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
-    }, []);
+    }, [location && location.pathname]);
 
     return (
         <>

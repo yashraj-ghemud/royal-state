@@ -87,7 +87,7 @@ const ExploreRooms = () => {
             {/* Header */}
             <header className="explore-header">
                 <div className="header-left">
-                    <h1>🏠 RentEasy</h1>
+                    <h1>🏠 Royal Stay 1</h1>
                     <p>Find your perfect room</p>
                 </div>
                 <div className="header-right">

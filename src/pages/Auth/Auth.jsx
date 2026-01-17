@@ -80,8 +80,46 @@ const Auth = () => {
         }
     };
 
+    // Intro/prologue video state: plays once then fades out to reveal auth page
+    // Show proj.mp4 on desktop, phnauth.mp4 on mobile
+    const [introActive, setIntroActive] = useState(true);
+    const [introFading, setIntroFading] = useState(false);
+    const [introSrc, setIntroSrc] = useState(window.innerWidth <= 768 ? '/phnauth.mp4' : '/proj.mp4');
+
+    useEffect(() => {
+        const handleResize = () => {
+            // Only update video source if intro is still active
+            if (introActive) {
+                setIntroSrc(window.innerWidth <= 768 ? '/phnauth.mp4' : '/proj.mp4');
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [introActive]);
+
+    const handleIntroEnded = () => {
+        // start fade-out animation
+        setIntroFading(true);
+        // after fade completes remove intro overlay
+        setTimeout(() => setIntroActive(false), 700);
+    };
+
     return (
         <div className="auth-container">
+            {/* Intro overlay: plays proj.mp4 once, then fades away */}
+            {introActive && (
+                <div className={`intro-overlay ${introFading ? 'fade-out' : ''}`}>
+                    <video
+                        autoPlay
+                        muted
+                        playsInline
+                        className="intro-video"
+                        onEnded={handleIntroEnded}
+                    >
+                        <source src={introSrc} type="video/mp4" />
+                    </video>
+                </div>
+            )}
             {/* Auth page: local autoplaying looping background video */}
             <video
                 autoPlay
@@ -94,14 +132,16 @@ const Auth = () => {
             </video>
             <div className="auth-video-overlay"></div>
 
+            {/* bottom/mobile video removed (keeps left video only) */}
+
             <motion.div
-                className="auth-box"
+                className={`auth-box auth-main ${introActive ? 'intro-playing' : ''}`}
                 initial="hidden"
                 animate="visible"
                 variants={fadeIn}
             >
                 <div className="auth-header">
-                    <h1>🏠 RentEasy</h1>
+                    <h1>🏠 Royal Stay 1</h1>
                     <p>{isLogin ? 'Welcome Back!' : 'Create Your Account'}</p>
                 </div>
 

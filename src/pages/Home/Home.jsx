@@ -337,23 +337,15 @@ const Home = () => {
                     style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
                 >
                     <motion.h1
-                        className="hero-title"
+                        className="hero-title hero-title-glow hero-title-top"
                         variants={textReveal}
                         initial="hidden"
                         animate="visible"
                         transition={{ delay: 0.3 }}
                     >
-                        🏠 RentEasy
+                        🏠 Royal Stay 1
                     </motion.h1>
-                    <motion.p
-                        className="hero-tagline"
-                        variants={fadeInUp}
-                        initial="hidden"
-                        animate="visible"
-                        transition={{ delay: 0.5 }}
-                    >
-                        Apna Perfect Room Dhundhein - PG, Flats & Rooms
-                    </motion.p>
+
                     <motion.div
                         className="hero-cta"
                         variants={scaleUp}
@@ -501,7 +493,7 @@ const Home = () => {
                         className="section-title"
                         variants={textReveal}
                     >
-                        Kyun Choose Karein RentEasy?
+                        Kyun Choose Karein Royal Stay 1?
                     </motion.h2>
 
                     <motion.div className="features-list" variants={staggerContainer}>
@@ -511,7 +503,7 @@ const Home = () => {
                             whileHover={{
                                 x: 10,
                                 scale: 1.02,
-                                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                                backgroundColor: "rgba(20, 20, 20, 0.45)",
                                 transition: { duration: 0.2 }
                             }}
                         >
@@ -531,7 +523,7 @@ const Home = () => {
                             whileHover={{
                                 x: -10,
                                 scale: 1.02,
-                                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                                backgroundColor: "rgba(20, 20, 20, 0.45)",
                                 transition: { duration: 0.2 }
                             }}
                         >
@@ -551,7 +543,7 @@ const Home = () => {
                             whileHover={{
                                 x: 10,
                                 scale: 1.02,
-                                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                                backgroundColor: "rgba(20, 20, 20, 0.45)",
                                 transition: { duration: 0.2 }
                             }}
                         >
@@ -571,7 +563,7 @@ const Home = () => {
                             whileHover={{
                                 x: -10,
                                 scale: 1.02,
-                                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                                backgroundColor: "rgba(20, 20, 20, 0.45)",
                                 transition: { duration: 0.2 }
                             }}
                         >
@@ -637,7 +629,7 @@ const Home = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 1 }}
                 >
-                    <p>© 2026 RentEasy. Made with ❤️ for you.</p>
+                    <p>© 2026 Royal Stay 1. Made with ❤️ for you.</p>
                 </motion.footer>
             </div>
         </div>
