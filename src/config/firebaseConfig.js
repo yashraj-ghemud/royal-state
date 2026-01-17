@@ -4,19 +4,20 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 export const firebaseConfig = {
-    apiKey: "T7t5Au63UpH5Y9xKSK889a7jNbKVESjB2mYD7VdZ",
-    authDomain: "royal-stay-1.firebaseapp.com",
-    databaseURL: "https://royal-stay-1-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    projectId: "royal-stay-1",
-    storageBucket: "royal-stay-1.appspot.com",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Cloudinary Configuration
 export const cloudinaryConfig = {
-    cloudName: "dnamqbz74",
-    uploadPreset: "pg_upload_preset"
+    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 };
 
 // Initialize Firebase

@@ -323,25 +323,7 @@ const Home = () => {
 
     return (
         <div className="home-container" ref={containerRef}>
-            {/* Video Background - Ultra Smooth Scroll Controlled */}
-            <video
-                ref={videoRef}
-                muted
-                playsInline
-                preload="auto"
-                className="video-background"
-            >
-                <source src="/bg.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
-
-            {/* Animated Overlay */}
-            <motion.div
-                className="video-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-            />
+            {/* VideoBackground is rendered at the app root to avoid clipping by transforms */}
 
             {/* Content */}
             <div className="home-content">

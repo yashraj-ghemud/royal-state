@@ -1,8 +1,11 @@
 /* Home Page Styles - Ultra Smooth Scroll Optimized */
 
 /* Smooth scrolling for entire page */
-html {
+html,
+body,
+#root {
     scroll-behavior: smooth;
+    background: transparent;
 }
 
 /* Performance optimizations */
@@ -14,34 +17,27 @@ html {
 .home-container {
     position: relative;
     min-height: 100vh;
-    min-height: 100%;
     width: 100%;
-    overflow-x: hidden;
-    /* GPU acceleration */
-    transform: translateZ(0);
-    backface-visibility: hidden;
+    overflow-x: visible;
+    background: transparent;
+    /* keep container simple so fixed children remain viewport-fixed */
 }
 
 /* Video Background - Hardware Accelerated */
 .video-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
     object-fit: contain;
-    background: #111;
-    z-index: 0;
-    will-change: transform, opacity;
-    transform: none;
-    backface-visibility: hidden;
-    -webkit-transform: none;
-    image-rendering: optimizeQuality;
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
+    /* show whole video without cropping */
+    object-position: center center;
+    /* center the video */
+    background: transparent;
+    /* let video show through */
+    z-index: -1000;
+    /* keep video behind everything */
     pointer-events: none;
-    box-shadow: none !important;
 }
 
 .video-overlay {
@@ -51,10 +47,12 @@ html {
     width: 100%;
     height: 100%;
     background: linear-gradient(180deg,
-            rgba(0, 0, 0, 0.3) 0%,
-            rgba(0, 0, 0, 0.5) 50%,
-            rgba(0, 0, 0, 0.7) 100%);
-    z-index: -1;
+            rgba(0, 0, 0, 0.18) 0%,
+            rgba(0, 0, 0, 0.42) 50%,
+            rgba(0, 0, 0, 0.62) 100%);
+    z-index: -9998;
+    /* sits above video but below content */
+    pointer-events: none;
     /* Smooth overlay transitions */
     will-change: opacity;
     transform: translateZ(0);
@@ -67,6 +65,7 @@ html {
     /* Smooth content scrolling */
     will-change: transform;
     transform: translateZ(0);
+    background: transparent;
 }
 
 /* Hero Section */

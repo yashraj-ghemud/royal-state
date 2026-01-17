@@ -82,17 +82,17 @@ const Auth = () => {
 
     return (
         <div className="auth-container">
-            {/* Video Background */}
+            {/* Auth page: local autoplaying looping background video */}
             <video
                 autoPlay
                 muted
                 loop
                 playsInline
-                className="video-background"
+                className="auth-video-background"
             >
                 <source src="/bg.mp4" type="video/mp4" />
             </video>
-            <div className="video-overlay"></div>
+            <div className="auth-video-overlay"></div>
 
             <motion.div
                 className="auth-box"

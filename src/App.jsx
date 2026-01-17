@@ -6,11 +6,13 @@ import Auth from './pages/Auth/Auth';
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import ExploreRooms from './pages/ExploreRooms/ExploreRooms';
 import './App.css';
+import VideoBackground from './components/VideoBackground';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <VideoBackground />
         <div className="app">
           <Routes>
             {/* Public Routes */}
