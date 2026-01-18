@@ -121,7 +121,7 @@ const AdminDashboard = () => {
     const startTimeRef = useRef(0);
 
     // Form states
-    const [title, setTitle] = useState('');
+    const [district, setDistrict] = useState('');
     const [location, setLocation] = useState('');
     const [price, setPrice] = useState('');
     const [phone, setPhone] = useState('');
@@ -131,6 +131,16 @@ const AdminDashboard = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [video, setVideo] = useState(null);
     const [videoPreview, setVideoPreview] = useState(null);
+
+    // Maharashtra Districts
+    const maharashtraDistricts = [
+        'Ahmednagar', 'Akola', 'Amravati', 'Aurangabad', 'Beed', 'Bhandara',
+        'Buldhana', 'Chandrapur', 'Dhule', 'Gadchiroli', 'Gondia', 'Hingoli',
+        'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai City', 'Mumbai Suburban',
+        'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Osmanabad', 'Palghar',
+        'Parbhani', 'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara',
+        'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
+    ];
 
     const { currentUser, logout, userRole } = useAuth();
     const navigate = useNavigate();
@@ -338,7 +348,7 @@ const AdminDashboard = () => {
 
     // Reset form to initial state
     const resetForm = () => {
-        setTitle('');
+        setDistrict('');
         setLocation('');
         setPrice('');
         setPhone('');
@@ -358,12 +368,12 @@ const AdminDashboard = () => {
         e.preventDefault();
 
         // Validation
-        if (!title.trim()) {
-            showToast('Please enter a room title', 'warning');
+        if (!district) {
+            showToast('Please select a district', 'warning');
             return;
         }
         if (!location.trim()) {
-            showToast('Please enter a location', 'warning');
+            showToast('Please enter a location address', 'warning');
             return;
         }
         if (!price || Number(price) <= 0) {
@@ -427,9 +437,13 @@ const AdminDashboard = () => {
                 setUploadProgress(70);
             }
 
+            // Generate title from roomType and district
+            const generatedTitle = `${roomType} in ${district}`;
+
             // Add room to Firestore with timeout
             const roomData = {
-                title: title.trim(),
+                title: generatedTitle,
+                district: district,
                 location: location.trim(),
                 price: Number(price),
                 phone: phone.trim(),
@@ -647,16 +661,19 @@ const AdminDashboard = () => {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <input
-                                        type="text"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        placeholder=" "
+                                    <select
+                                        value={district}
+                                        onChange={(e) => setDistrict(e.target.value)}
                                         required
-                                        id="title"
+                                        id="district"
                                         disabled={uploading}
-                                    />
-                                    <label htmlFor="title">Room Title</label>
+                                    >
+                                        <option value="">Select District</option>
+                                        {maharashtraDistricts.map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                    </select>
+                                    <label htmlFor="district">District (Maharashtra)</label>
                                 </div>
                                 <div className="form-group">
                                     <select
@@ -688,7 +705,7 @@ const AdminDashboard = () => {
                                         id="location"
                                         disabled={uploading}
                                     />
-                                    <label htmlFor="location">Location</label>
+                                    <label htmlFor="location">Address / Area</label>
                                 </div>
                                 <div className="form-group">
                                     <input
