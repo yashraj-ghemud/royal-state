@@ -882,6 +882,28 @@
     /* Ensure actions are above overlays */
 }
 
+.edit-btn {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid rgba(0, 247, 255, 0.4);
+    color: #00f7ff;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    font-size: 0.95rem;
+    font-weight: 600;
+    position: relative;
+    z-index: 30;
+}
+
+.edit-btn:hover {
+    background: rgba(0, 247, 255, 0.2);
+    border-color: #00f7ff;
+    box-shadow: 0 0 25px rgba(0, 247, 255, 0.4);
+    transform: translateY(-2px);
+}
+
 .delete-btn {
     flex: 1;
     padding: 12px;

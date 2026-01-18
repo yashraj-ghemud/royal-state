@@ -10,7 +10,8 @@ import {
     query,
     orderBy,
     serverTimestamp,
-    onSnapshot
+    onSnapshot,
+    updateDoc
 } from 'firebase/firestore';
 import { db, cloudinaryConfig } from '../../config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -131,6 +132,7 @@ const AdminDashboard = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [video, setVideo] = useState(null);
     const [videoPreview, setVideoPreview] = useState(null);
+    const [editingRoom, setEditingRoom] = useState(null);
 
     // Maharashtra Districts
     const maharashtraDistricts = [
@@ -348,6 +350,7 @@ const AdminDashboard = () => {
 
     // Reset form to initial state
     const resetForm = () => {
+        setEditingRoom(null);
         setDistrict('');
         setLocation('');
         setPrice('');
@@ -361,6 +364,22 @@ const AdminDashboard = () => {
         setUploadProgress(0);
         setUploadStatus('');
         setEta('');
+    };
+
+    const handleEdit = (room) => {
+        setEditingRoom(room);
+        setDistrict(room.district);
+        setLocation(room.location);
+        setPrice(room.price);
+        setPhone(room.phone);
+        setDescription(room.description);
+        setRoomType(room.roomType);
+        setImage(null);
+        setImagePreview(room.imageURL);
+        setVideo(null);
+        setVideoPreview(room.videoURL);
+        setShowForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Handle form submit
@@ -416,12 +435,16 @@ const AdminDashboard = () => {
 
                 setUploadStatus('Uploading Image... 🖼️');
                 imageURL = await uploadToCloudinary(compressedImage, 'image');
+            } else if (editingRoom && imagePreview) {
+                imageURL = editingRoom.imageURL;
             }
 
             // Upload video if provided
             if (video) {
                 setUploadStatus('Uploading Video... 🎬');
                 videoURL = await uploadToCloudinary(video, 'video');
+            } else if (editingRoom && videoPreview) {
+                videoURL = editingRoom.videoURL;
             }
 
             // Final save phase
@@ -451,9 +474,10 @@ const AdminDashboard = () => {
                 roomType: roomType,
                 imageURL: imageURL || PLACEHOLDER_IMAGE,
                 videoURL: videoURL || null,
-                ownerId: currentUser?.uid || 'admin',
-                ownerEmail: currentUser?.email || 'admin',
-                createdAt: serverTimestamp(),
+                ownerId: editingRoom ? editingRoom.ownerId : (currentUser?.uid || 'admin'),
+                ownerEmail: editingRoom ? editingRoom.ownerEmail : (currentUser?.email || 'admin'),
+                createdAt: editingRoom ? editingRoom.createdAt : serverTimestamp(),
+                updatedAt: serverTimestamp(),
                 status: 'active'
             };
 
@@ -466,7 +490,14 @@ const AdminDashboard = () => {
                 const timeoutPromise = new Promise((_, reject) =>
                     setTimeout(() => reject(new Error('Database save timed out. Please check your connection.')), 15000)
                 );
-                const savePromise = addDoc(collection(db, 'rooms'), roomData);
+
+                let savePromise;
+                if (editingRoom) {
+                    savePromise = updateDoc(doc(db, 'rooms', editingRoom.id), roomData);
+                } else {
+                    savePromise = addDoc(collection(db, 'rooms'), roomData);
+                }
+
                 return Promise.race([savePromise, timeoutPromise]);
             };
 
@@ -479,7 +510,8 @@ const AdminDashboard = () => {
             // Reset and close form
             resetForm();
             setShowForm(false);
-            showToast('Room posted successfully! 🎉', 'success');
+            create: false, // removed resetForm here as it is called after
+                showToast(`Room ${editingRoom ? 'updated' : 'posted'} successfully! 🎉`, 'success');
 
         } catch (error) {
             console.error('Error posting room:', error);
@@ -657,7 +689,7 @@ const AdminDashboard = () => {
                         exit={{ opacity: 0, height: 0 }}
                     >
                         <form onSubmit={handleSubmit} className="room-form">
-                            <h2>Post New Room</h2>
+                            <h2>{editingRoom ? 'Edit Room Details' : 'Post New Room'}</h2>
 
                             <div className="form-row">
                                 <div className="form-group">
@@ -844,7 +876,7 @@ const AdminDashboard = () => {
                                 className="submit-btn"
                                 disabled={uploading}
                             >
-                                {uploading ? 'Processing...' : '🚀 Post Room'}
+                                {uploading ? 'Processing...' : (editingRoom ? '💾 Update Room' : '🚀 Post Room')}
                             </button>
                         </form>
                     </motion.div>
@@ -894,6 +926,12 @@ const AdminDashboard = () => {
                                     <p className="room-phone">📞 {room.phone}</p>
                                 </div>
                                 <div className="room-actions">
+                                    <button
+                                        className="edit-btn"
+                                        onClick={() => handleEdit(room)}
+                                    >
+                                        ✏️ Edit
+                                    </button>
                                     <button
                                         className="delete-btn"
                                         onClick={() => handleDelete(room.id, room.title)}

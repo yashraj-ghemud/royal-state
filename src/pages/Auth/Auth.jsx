@@ -80,53 +80,12 @@ const Auth = () => {
         }
     };
 
-    // Check if mobile device
-    const isMobile = window.innerWidth <= 768;
 
-    // Intro/prologue video state: plays once then fades out to reveal auth page
-    // Only show intro video on desktop (proj.mp4), skip on mobile
-    const [introActive, setIntroActive] = useState(!isMobile);
-    const [introFading, setIntroFading] = useState(false);
-
-    // Light states for neon effect
-    const [lightOn, setLightOn] = useState(isMobile); // Start with light on for mobile
-    const [lightFlash, setLightFlash] = useState(false);
-
-    const handleIntroEnded = () => {
-        // start fade-out animation
-        setIntroFading(true);
-        // after fade completes remove intro overlay
-        setTimeout(() => setIntroActive(false), 700);
-
-        // After 1 second, flash the torch and turn on neon glow
-        setTimeout(() => {
-            // Trigger flash animation
-            setLightFlash(true);
-            // After flash, keep light on
-            setTimeout(() => {
-                setLightFlash(false);
-                setLightOn(true);
-            }, 300);
-        }, 1000);
-    };
 
     return (
         <div className="auth-container">
-            <div className={`glowing-light ${lightOn ? 'active' : ''} ${lightFlash ? 'flash' : ''}`} aria-hidden="true" />
-            {/* Intro overlay: plays proj.mp4 once, then fades away */}
-            {introActive && (
-                <div className={`intro-overlay ${introFading ? 'fade-out' : ''}`}>
-                    <video
-                        autoPlay
-                        muted
-                        playsInline
-                        className="intro-video"
-                        onEnded={handleIntroEnded}
-                    >
-                        <source src="/proj.mp4" type="video/mp4" />
-                    </video>
-                </div>
-            )}
+            <div className="glowing-light active" aria-hidden="true" />
+
             {/* Auth page: local autoplaying looping background video */}
             <video
                 autoPlay
@@ -142,13 +101,13 @@ const Auth = () => {
             {/* bottom/mobile video removed (keeps left video only) */}
 
             <motion.div
-                className={`auth-box auth-main ${introActive ? 'intro-playing' : ''} ${lightOn ? 'neon-active' : ''} ${lightFlash ? 'flash' : ''}`}
+                className="auth-box auth-main neon-active"
                 initial="hidden"
                 animate="visible"
                 variants={fadeIn}
             >
                 {/* Light cone effect - lamp light scattering */}
-                <div className={`light-cone ${lightOn ? 'active' : ''} ${lightFlash ? 'flash' : ''}`}></div>
+                <div className="light-cone active"></div>
 
                 <div className="auth-header">
                     <h1>🏠 Royal Stay 1</h1>
