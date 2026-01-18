@@ -263,12 +263,14 @@ const ExploreRooms = () => {
                     <div className="no-rooms">
                         <span className="no-rooms-icon">🏠</span>
                         <p>No rooms found. Try different filters!</p>
-                        {(filterType !== 'All' || priceRange !== 'All' || searchQuery) && (
+                        {(filterType !== 'All' || filterDistrict !== 'All' || minPrice || maxPrice || searchQuery) && (
                             <button
                                 className="clear-filters-btn"
                                 onClick={() => {
                                     setFilterType('All');
-                                    setPriceRange('All');
+                                    setFilterDistrict('All');
+                                    setMinPrice('');
+                                    setMaxPrice('');
                                     setSearchQuery('');
                                 }}
                             >
