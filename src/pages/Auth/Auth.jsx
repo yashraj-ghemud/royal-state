@@ -80,26 +80,17 @@ const Auth = () => {
         }
     };
 
+    // Check if mobile device
+    const isMobile = window.innerWidth <= 768;
+
     // Intro/prologue video state: plays once then fades out to reveal auth page
-    // Show proj.mp4 on desktop, phnauth.mp4 on mobile
-    const [introActive, setIntroActive] = useState(true);
+    // Only show intro video on desktop (proj.mp4), skip on mobile
+    const [introActive, setIntroActive] = useState(!isMobile);
     const [introFading, setIntroFading] = useState(false);
-    const [introSrc, setIntroSrc] = useState(window.innerWidth <= 768 ? '/phnauth.mp4' : '/proj.mp4');
 
     // Light states for neon effect
-    const [lightOn, setLightOn] = useState(false);
+    const [lightOn, setLightOn] = useState(isMobile); // Start with light on for mobile
     const [lightFlash, setLightFlash] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            // Only update video source if intro is still active
-            if (introActive) {
-                setIntroSrc(window.innerWidth <= 768 ? '/phnauth.mp4' : '/proj.mp4');
-            }
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [introActive]);
 
     const handleIntroEnded = () => {
         // start fade-out animation
@@ -132,7 +123,7 @@ const Auth = () => {
                         className="intro-video"
                         onEnded={handleIntroEnded}
                     >
-                        <source src={introSrc} type="video/mp4" />
+                        <source src="/proj.mp4" type="video/mp4" />
                     </video>
                 </div>
             )}
