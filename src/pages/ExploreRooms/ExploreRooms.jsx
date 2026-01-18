@@ -15,8 +15,20 @@ const ExploreRooms = () => {
     const [loading, setLoading] = useState(true);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [filterType, setFilterType] = useState('All');
+    const [filterDistrict, setFilterDistrict] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [priceRange, setPriceRange] = useState('All');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+
+    // Maharashtra Districts
+    const maharashtraDistricts = [
+        'Ahmednagar', 'Akola', 'Amravati', 'Aurangabad', 'Beed', 'Bhandara',
+        'Buldhana', 'Chandrapur', 'Dhule', 'Gadchiroli', 'Gondia', 'Hingoli',
+        'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai City', 'Mumbai Suburban',
+        'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Osmanabad', 'Palghar',
+        'Parbhani', 'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara',
+        'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
+    ];
 
     const { currentUser, logout, userRole } = useAuth();
     const navigate = useNavigate();
@@ -57,15 +69,18 @@ const ExploreRooms = () => {
             filtered = filtered.filter(room => room.roomType === filterType);
         }
 
-        // Filter by price range
-        if (priceRange !== 'All') {
-            const [min, max] = priceRange.split('-').map(Number);
+        // Filter by district
+        if (filterDistrict !== 'All') {
+            filtered = filtered.filter(room => room.district === filterDistrict);
+        }
+
+        // Filter by price range (manual min/max)
+        const min = minPrice ? Number(minPrice) : 0;
+        const max = maxPrice ? Number(maxPrice) : Infinity;
+        if (minPrice || maxPrice) {
             filtered = filtered.filter(room => {
                 const price = room.price || 0;
-                if (max) {
-                    return price >= min && price <= max;
-                }
-                return price >= min; // For "50000+" case
+                return price >= min && price <= max;
             });
         }
 
@@ -75,12 +90,13 @@ const ExploreRooms = () => {
             filtered = filtered.filter(room =>
                 room.title?.toLowerCase().includes(query) ||
                 room.location?.toLowerCase().includes(query) ||
-                room.description?.toLowerCase().includes(query)
+                room.description?.toLowerCase().includes(query) ||
+                room.district?.toLowerCase().includes(query)
             );
         }
 
         setFilteredRooms(filtered);
-    }, [filterType, searchQuery, priceRange, rooms]);
+    }, [filterType, filterDistrict, searchQuery, minPrice, maxPrice, rooms]);
 
     // Logout
     const handleLogout = async () => {
@@ -93,14 +109,6 @@ const ExploreRooms = () => {
     };
 
     const roomTypes = ['All', 'PG', 'Single Room', '1BHK', '2BHK', '3BHK', 'Flat'];
-    const priceRanges = [
-        { label: 'All Prices', value: 'All' },
-        { label: 'Under ₹10K', value: '0-10000' },
-        { label: '₹10K - ₹20K', value: '10000-20000' },
-        { label: '₹20K - ₹35K', value: '20000-35000' },
-        { label: '₹35K - ₹50K', value: '35000-50000' },
-        { label: 'Above ₹50K', value: '50000-999999' }
-    ];
 
     const fadeIn = {
         hidden: { opacity: 0, y: 20 },
@@ -130,7 +138,7 @@ const ExploreRooms = () => {
             {/* Header */}
             <header className="explore-header">
                 <div className="header-left">
-                    <h1>🏠 Royal Stay</h1>
+                    <h1>🏠 Royal Stay 1</h1>
                     <p>Find your perfect room</p>
                 </div>
                 <div className="header-right">
@@ -187,15 +195,43 @@ const ExploreRooms = () => {
                 </div>
 
                 <div className="price-filter">
+                    <span className="price-label">₹</span>
+                    <input
+                        type="number"
+                        placeholder="Min"
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        className="price-input cursor-target"
+                        min="0"
+                    />
+                    <span className="price-separator">-</span>
+                    <input
+                        type="number"
+                        placeholder="Max"
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        className="price-input cursor-target"
+                        min="0"
+                    />
+                    {(minPrice || maxPrice) && (
+                        <button
+                            className="clear-price cursor-target"
+                            onClick={() => { setMinPrice(''); setMaxPrice(''); }}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+
+                <div className="district-filter">
                     <select
-                        value={priceRange}
-                        onChange={(e) => setPriceRange(e.target.value)}
-                        className="price-select cursor-target"
+                        value={filterDistrict}
+                        onChange={(e) => setFilterDistrict(e.target.value)}
+                        className="district-select cursor-target"
                     >
-                        {priceRanges.map(range => (
-                            <option key={range.value} value={range.value}>
-                                {range.label}
-                            </option>
+                        <option value="All">All Districts</option>
+                        {maharashtraDistricts.map(d => (
+                            <option key={d} value={d}>{d}</option>
                         ))}
                     </select>
                 </div>
@@ -206,7 +242,8 @@ const ExploreRooms = () => {
                 <p>
                     Showing <span className="count">{filteredRooms.length}</span> rooms
                     {filterType !== 'All' && <span className="filter-tag">{filterType}</span>}
-                    {priceRange !== 'All' && <span className="filter-tag">₹ Filtered</span>}
+                    {filterDistrict !== 'All' && <span className="filter-tag">{filterDistrict}</span>}
+                    {(minPrice || maxPrice) && <span className="filter-tag">₹ {minPrice || '0'} - {maxPrice || '∞'}</span>}
                 </p>
             </div>
 
