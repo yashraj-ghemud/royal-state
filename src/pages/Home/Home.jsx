@@ -353,7 +353,7 @@ const Home = () => {
                         animate="visible"
                         transition={{ delay: 0.8 }}
                     >
-                        <Link to="/auth" className="cta-button primary">
+                        <Link to="/auth" className="cta-button primary cursor-target">
                             Get Started
                         </Link>
                     </motion.div>
@@ -388,7 +388,7 @@ const Home = () => {
                         className="section-title"
                         variants={textReveal}
                     >
-                        Hamari Services
+                        Our Services
                     </motion.h2>
 
                     <motion.div
@@ -396,7 +396,7 @@ const Home = () => {
                         variants={staggerContainer}
                     >
                         <motion.div
-                            className="service-card"
+                            className="service-card cursor-target"
                             variants={cardAnimation}
                             whileHover={{
                                 y: -15,
@@ -417,7 +417,7 @@ const Home = () => {
                         </motion.div>
 
                         <motion.div
-                            className="service-card"
+                            className="service-card cursor-target"
                             variants={cardAnimation}
                             whileHover={{
                                 y: -15,
@@ -438,7 +438,7 @@ const Home = () => {
                         </motion.div>
 
                         <motion.div
-                            className="service-card"
+                            className="service-card cursor-target"
                             variants={cardAnimation}
                             whileHover={{
                                 y: -15,
@@ -458,26 +458,7 @@ const Home = () => {
                             <p>1BHK, 2BHK aur 3BHK flats available. Family friendly options.</p>
                         </motion.div>
 
-                        <motion.div
-                            className="service-card"
-                            variants={cardAnimation}
-                            whileHover={{
-                                y: -15,
-                                scale: 1.03,
-                                boxShadow: "0 25px 50px rgba(0, 0, 0, 0.4)",
-                                transition: { duration: 0.3, ease: "easeOut" }
-                            }}
-                        >
-                            <motion.div
-                                className="service-icon"
-                                whileHover={{ scale: 1.2, rotate: -10 }}
-                                transition={{ type: "spring", stiffness: 400 }}
-                            >
-                                📞
-                            </motion.div>
-                            <h3>Direct Contact</h3>
-                            <p>Owners se directly baat karein. No middleman, no brokerage!</p>
-                        </motion.div>
+
                     </motion.div>
                 </motion.section>
 
@@ -493,12 +474,12 @@ const Home = () => {
                         className="section-title"
                         variants={textReveal}
                     >
-                        Kyun Choose Karein Royal Stay 1?
+                        Why to Choose Royal Stay 1?
                     </motion.h2>
 
                     <motion.div className="features-list" variants={staggerContainer}>
                         <motion.div
-                            className="feature-item"
+                            className="feature-item cursor-target"
                             variants={slideInLeft}
                             whileHover={{
                                 x: 10,
@@ -518,7 +499,7 @@ const Home = () => {
                             <span>Verified Listings Only</span>
                         </motion.div>
                         <motion.div
-                            className="feature-item"
+                            className="feature-item cursor-target"
                             variants={slideInRight}
                             whileHover={{
                                 x: -10,
@@ -537,28 +518,9 @@ const Home = () => {
                             </motion.span>
                             <span>Real Photos & Videos</span>
                         </motion.div>
+
                         <motion.div
-                            className="feature-item"
-                            variants={slideInLeft}
-                            whileHover={{
-                                x: 10,
-                                scale: 1.02,
-                                backgroundColor: "rgba(20, 20, 20, 0.45)",
-                                transition: { duration: 0.2 }
-                            }}
-                        >
-                            <motion.span
-                                className="feature-check"
-                                initial={{ scale: 0, rotate: -180 }}
-                                whileInView={{ scale: 1, rotate: 0 }}
-                                transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                            >
-                                ✓
-                            </motion.span>
-                            <span>Zero Brokerage</span>
-                        </motion.div>
-                        <motion.div
-                            className="feature-item"
+                            className="feature-item cursor-target"
                             variants={slideInRight}
                             whileHover={{
                                 x: -10,
@@ -601,19 +563,19 @@ const Home = () => {
                             Ready to Find Your Perfect Space?
                         </motion.h2>
                         <motion.p variants={fadeInUp}>
-                            Sign up karein aur apna dream room dhundhna shuru karein!
+                            Sign up now and start your journey to find the perfect room!
                         </motion.p>
                         <motion.div
                             className="auth-buttons"
                             variants={staggerContainer}
                         >
                             <motion.div variants={slideInLeft}>
-                                <Link to="/auth" className="cta-button primary">
+                                <Link to="/auth" className="cta-button primary cursor-target">
                                     Sign In
                                 </Link>
                             </motion.div>
                             <motion.div variants={slideInRight}>
-                                <Link to="/auth?mode=signup" className="cta-button secondary">
+                                <Link to="/auth?mode=signup" className="cta-button secondary cursor-target">
                                     Create Account
                                 </Link>
                             </motion.div>

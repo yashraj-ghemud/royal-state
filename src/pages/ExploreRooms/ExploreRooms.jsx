@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, getDocs, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import './ExploreRooms.css';
+
+// Placeholder image URL
+const PLACEHOLDER_IMAGE = 'https://placehold.co/400x300/1a1a2e/00d9ff?text=No+Image';
 
 const ExploreRooms = () => {
     const [rooms, setRooms] = useState([]);
@@ -13,6 +16,7 @@ const ExploreRooms = () => {
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [filterType, setFilterType] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [priceRange, setPriceRange] = useState('All');
 
     const { currentUser, logout, userRole } = useAuth();
     const navigate = useNavigate();
@@ -53,17 +57,30 @@ const ExploreRooms = () => {
             filtered = filtered.filter(room => room.roomType === filterType);
         }
 
+        // Filter by price range
+        if (priceRange !== 'All') {
+            const [min, max] = priceRange.split('-').map(Number);
+            filtered = filtered.filter(room => {
+                const price = room.price || 0;
+                if (max) {
+                    return price >= min && price <= max;
+                }
+                return price >= min; // For "50000+" case
+            });
+        }
+
         // Filter by search query
         if (searchQuery) {
+            const query = searchQuery.toLowerCase();
             filtered = filtered.filter(room =>
-                room.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                room.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                room.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                room.title?.toLowerCase().includes(query) ||
+                room.location?.toLowerCase().includes(query) ||
+                room.description?.toLowerCase().includes(query)
             );
         }
 
         setFilteredRooms(filtered);
-    }, [filterType, searchQuery, rooms]);
+    }, [filterType, searchQuery, priceRange, rooms]);
 
     // Logout
     const handleLogout = async () => {
@@ -76,10 +93,36 @@ const ExploreRooms = () => {
     };
 
     const roomTypes = ['All', 'PG', 'Single Room', '1BHK', '2BHK', '3BHK', 'Flat'];
+    const priceRanges = [
+        { label: 'All Prices', value: 'All' },
+        { label: 'Under ₹10K', value: '0-10000' },
+        { label: '₹10K - ₹20K', value: '10000-20000' },
+        { label: '₹20K - ₹35K', value: '20000-35000' },
+        { label: '₹35K - ₹50K', value: '35000-50000' },
+        { label: 'Above ₹50K', value: '50000-999999' }
+    ];
 
     const fadeIn = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    };
+
+    const staggerContainer = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const cardVariant = {
+        hidden: { opacity: 0, y: 30, scale: 0.95 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: { duration: 0.4, ease: "easeOut" }
+        }
     };
 
     return (
@@ -87,14 +130,22 @@ const ExploreRooms = () => {
             {/* Header */}
             <header className="explore-header">
                 <div className="header-left">
-                    <h1>🏠 Royal Stay 1</h1>
+                    <h1>🏠 Royal Stay</h1>
                     <p>Find your perfect room</p>
                 </div>
                 <div className="header-right">
-                    <span className="user-email">{currentUser?.email}</span>
-                    <button className="logout-btn" onClick={handleLogout}>
-                        Logout
-                    </button>
+                    {currentUser ? (
+                        <>
+                            <span className="user-email">{currentUser.email}</span>
+                            <button className="logout-btn cursor-target" onClick={handleLogout}>
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <button className="login-btn cursor-target" onClick={() => navigate('/auth')}>
+                            Login
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -113,28 +164,59 @@ const ExploreRooms = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
+                    {searchQuery && (
+                        <button
+                            className="clear-search"
+                            onClick={() => setSearchQuery('')}
+                        >
+                            ✕
+                        </button>
+                    )}
                 </div>
 
                 <div className="filter-tabs">
                     {roomTypes.map(type => (
                         <button
                             key={type}
-                            className={`filter-tab ${filterType === type ? 'active' : ''}`}
+                            className={`filter-tab cursor-target ${filterType === type ? 'active' : ''}`}
                             onClick={() => setFilterType(type)}
                         >
                             {type}
                         </button>
                     ))}
                 </div>
+
+                <div className="price-filter">
+                    <select
+                        value={priceRange}
+                        onChange={(e) => setPriceRange(e.target.value)}
+                        className="price-select cursor-target"
+                    >
+                        {priceRanges.map(range => (
+                            <option key={range.value} value={range.value}>
+                                {range.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </motion.div>
 
             {/* Results Count */}
             <div className="results-info">
-                <p>Showing {filteredRooms.length} rooms</p>
+                <p>
+                    Showing <span className="count">{filteredRooms.length}</span> rooms
+                    {filterType !== 'All' && <span className="filter-tag">{filterType}</span>}
+                    {priceRange !== 'All' && <span className="filter-tag">₹ Filtered</span>}
+                </p>
             </div>
 
             {/* Rooms Grid */}
-            <div className="rooms-grid">
+            <motion.div
+                className="rooms-grid"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+            >
                 {loading ? (
                     <div className="loading">
                         <div className="spinner"></div>
@@ -142,32 +224,49 @@ const ExploreRooms = () => {
                     </div>
                 ) : filteredRooms.length === 0 ? (
                     <div className="no-rooms">
-                        <span>🏠</span>
+                        <span className="no-rooms-icon">🏠</span>
                         <p>No rooms found. Try different filters!</p>
+                        {(filterType !== 'All' || priceRange !== 'All' || searchQuery) && (
+                            <button
+                                className="clear-filters-btn"
+                                onClick={() => {
+                                    setFilterType('All');
+                                    setPriceRange('All');
+                                    setSearchQuery('');
+                                }}
+                            >
+                                Clear All Filters
+                            </button>
+                        )}
                     </div>
                 ) : (
-                    filteredRooms.map((room, index) => (
+                    filteredRooms.map((room) => (
                         <motion.div
                             key={room.id}
-                            className="room-card"
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            className="room-card cursor-target"
+                            variants={cardVariant}
                             onClick={() => setSelectedRoom(room)}
+                            whileHover={{ y: -8, transition: { duration: 0.2 } }}
                         >
                             <div className="room-image">
-                                <img src={room.imageURL} alt={room.title} />
+                                <img
+                                    src={room.imageURL || PLACEHOLDER_IMAGE}
+                                    alt={room.title}
+                                    onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
+                                    loading="lazy"
+                                />
                                 <span className="room-type-badge">{room.roomType}</span>
+                                {room.videoURL && <span className="video-indicator">🎬</span>}
                             </div>
                             <div className="room-info">
                                 <h3>{room.title}</h3>
                                 <p className="room-location">📍 {room.location}</p>
-                                <p className="room-price">₹{room.price?.toLocaleString()}/month</p>
+                                <p className="room-price">₹{room.price?.toLocaleString()}<span>/month</span></p>
                             </div>
                             <div className="room-actions">
                                 <a
                                     href={`tel:${room.phone}`}
-                                    className="call-btn"
+                                    className="call-btn cursor-target"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     📞 Call Owner
@@ -176,7 +275,7 @@ const ExploreRooms = () => {
                         </motion.div>
                     ))
                 )}
-            </div>
+            </motion.div>
 
             {/* Room Detail Modal */}
             <AnimatePresence>
@@ -190,9 +289,9 @@ const ExploreRooms = () => {
                     >
                         <motion.div
                             className="modal-content"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
+                            initial={{ scale: 0.8, opacity: 0, y: 50 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.8, opacity: 0, y: 50 }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
@@ -203,18 +302,23 @@ const ExploreRooms = () => {
                             </button>
 
                             <div className="modal-image">
-                                <img src={selectedRoom.imageURL} alt={selectedRoom.title} />
+                                <img
+                                    src={selectedRoom.imageURL || PLACEHOLDER_IMAGE}
+                                    alt={selectedRoom.title}
+                                    onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
+                                />
                                 <span className="room-type-badge">{selectedRoom.roomType}</span>
                             </div>
 
                             {/* Video Section (if available) */}
                             {selectedRoom.videoURL && (
                                 <div className="modal-video">
-                                    <h4>🎬 Room Video</h4>
+                                    <h4>🎬 Room Video Tour</h4>
                                     <video
                                         src={selectedRoom.videoURL}
                                         controls
                                         className="room-video-player"
+                                        poster={selectedRoom.imageURL || PLACEHOLDER_IMAGE}
                                     />
                                 </div>
                             )}
@@ -222,21 +326,32 @@ const ExploreRooms = () => {
                             <div className="modal-details">
                                 <h2>{selectedRoom.title}</h2>
                                 <p className="modal-location">📍 {selectedRoom.location}</p>
-                                <p className="modal-price">₹{selectedRoom.price?.toLocaleString()}/month</p>
+                                <p className="modal-price">
+                                    ₹{selectedRoom.price?.toLocaleString()}
+                                    <span className="price-suffix">/month</span>
+                                </p>
 
                                 <div className="modal-description">
-                                    <h4>Description</h4>
-                                    <p>{selectedRoom.description}</p>
+                                    <h4>📝 Description</h4>
+                                    <p>{selectedRoom.description || 'No description provided.'}</p>
                                 </div>
 
                                 <div className="modal-contact">
-                                    <h4>Contact Owner</h4>
-                                    <p className="owner-phone">📞 {selectedRoom.phone}</p>
+                                    <h4>📞 Contact Owner</h4>
+                                    <p className="owner-phone">{selectedRoom.phone}</p>
                                     <a
                                         href={`tel:${selectedRoom.phone}`}
-                                        className="call-btn large"
+                                        className="call-btn large cursor-target"
                                     >
                                         📞 Call Now
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/91${selectedRoom.phone}?text=Hi, I'm interested in your room listing: ${selectedRoom.title}`}
+                                        className="whatsapp-btn cursor-target"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        💬 WhatsApp
                                     </a>
                                 </div>
                             </div>

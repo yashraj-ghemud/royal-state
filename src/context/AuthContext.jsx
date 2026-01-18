@@ -41,9 +41,11 @@ export const AuthProvider = ({ children }) => {
         // Check for hardcoded admin credentials
         if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
             // Set admin user locally (no Firebase auth for admin)
-            setCurrentUser({ email: ADMIN_EMAIL, uid: 'admin-local' });
+            const adminUser = { email: ADMIN_EMAIL, uid: 'admin-local' };
+            setCurrentUser(adminUser);
             setUserRole('admin');
-            return { user: { email: ADMIN_EMAIL, uid: 'admin-local' } };
+            localStorage.setItem('isAdmin', 'true');
+            return { user: adminUser };
         }
 
         // Regular Firebase login for customers
@@ -62,6 +64,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         setUserRole(null);
         setCurrentUser(null);
+        localStorage.removeItem('isAdmin');
         // Only sign out if it's a Firebase user
         if (auth.currentUser) {
             return signOut(auth);
@@ -79,15 +82,27 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // Check for local admin session first
+        const isAdmin = localStorage.getItem('isAdmin');
+        if (isAdmin === 'true') {
+            setCurrentUser({ email: ADMIN_EMAIL, uid: 'admin-local' });
+            setUserRole('admin');
+            setLoading(false);
+            return; // Skip firebase check if admin
+        }
+
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             try {
                 if (user) {
                     setCurrentUser(user);
                     const role = await getUserRole(user.uid);
                     setUserRole(role);
-                } else if (!currentUser) {
-                    setCurrentUser(null);
-                    setUserRole(null);
+                } else {
+                    // Only reset if not admin (double check)
+                    if (localStorage.getItem('isAdmin') !== 'true') {
+                        setCurrentUser(null);
+                        setUserRole(null);
+                    }
                 }
             } catch (err) {
                 console.error('Error in auth state handler:', err);
@@ -110,7 +125,6 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {/* DEBUG: render children regardless of loading to avoid blank page during auth init */}
             {children}
         </AuthContext.Provider>
     );

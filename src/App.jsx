@@ -7,17 +7,20 @@ import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import ExploreRooms from './pages/ExploreRooms/ExploreRooms';
 import './App.css';
 import VideoBackground from './components/VideoBackground';
+import TargetCursor from './components/TargetCursor';
 
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
+        <TargetCursor parallaxOn={false} />
         <VideoBackground />
         <div className="app">
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/explore-rooms" element={<ExploreRooms />} />
 
             {/* Protected Routes - Admin Only */}
             <Route
@@ -25,16 +28,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Protected Routes - Customer Only */}
-            <Route
-              path="/explore-rooms"
-              element={
-                <ProtectedRoute allowedRoles={['customer']}>
-                  <ExploreRooms />
                 </ProtectedRoute>
               }
             />

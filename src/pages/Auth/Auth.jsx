@@ -167,13 +167,13 @@ const Auth = () => {
                 {/* Toggle Tabs */}
                 <div className="auth-tabs">
                     <button
-                        className={`tab-btn ${isLogin ? 'active' : ''}`}
+                        className={`tab-btn cursor-target ${isLogin ? 'active' : ''}`}
                         onClick={() => setIsLogin(true)}
                     >
                         Login
                     </button>
                     <button
-                        className={`tab-btn ${!isLogin ? 'active' : ''}`}
+                        className={`tab-btn cursor-target ${!isLogin ? 'active' : ''}`}
                         onClick={() => setIsLogin(false)}
                     >
                         Sign Up
@@ -220,7 +220,7 @@ const Auth = () => {
 
                     <button
                         type="submit"
-                        className="submit-btn"
+                        className="submit-btn cursor-target"
                         disabled={loading}
                     >
                         {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Account')}
@@ -228,7 +228,7 @@ const Auth = () => {
                 </form>
 
                 <div className="auth-footer">
-                    <a href="/" className="back-link">← Back to Home</a>
+                    <a href="/" className="back-link cursor-target">← Back to Home</a>
                 </div>
             </motion.div>
         </div>
