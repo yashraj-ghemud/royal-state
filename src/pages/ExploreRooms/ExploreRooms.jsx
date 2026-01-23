@@ -1,13 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { db } from '../../config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import './ExploreRooms.css';
 
 // Placeholder image URL
 const PLACEHOLDER_IMAGE = 'https://placehold.co/400x300/1a1a2e/00d9ff?text=No+Image';
+
+// Helper to format timestamp
+const formatPostTime = (timestamp) => {
+    if (!timestamp) return '';
+
+    const now = new Date();
+    const postDate = timestamp.toDate();
+    const diffInSeconds = Math.floor((now - postDate) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+    return postDate.toLocaleDateString();
+};
 
 const ExploreRooms = () => {
     const [rooms, setRooms] = useState([]);
@@ -108,7 +124,37 @@ const ExploreRooms = () => {
         }
     };
 
-    const roomTypes = ['All', 'PG', 'Single Room', '1BHK', '2BHK', '3BHK', 'Flat'];
+    // Handle Like
+    const handleLike = async (room) => {
+        // e.stopPropagation() handled in onClick
+        if (!currentUser) {
+            alert('Please login to like posts!');
+            return;
+        }
+
+        const roomRef = doc(db, 'rooms', room.id);
+        const isLiked = room.likedBy?.includes(currentUser.uid);
+
+        try {
+            if (isLiked) {
+                await updateDoc(roomRef, {
+                    likes: increment(-1),
+                    likedBy: arrayRemove(currentUser.uid),
+                    likedByEmails: arrayRemove(currentUser.email)
+                });
+            } else {
+                await updateDoc(roomRef, {
+                    likes: increment(1),
+                    likedBy: arrayUnion(currentUser.uid),
+                    likedByEmails: arrayUnion(currentUser.email)
+                });
+            }
+        } catch (error) {
+            console.error('Error updating like:', error);
+        }
+    };
+
+    const roomTypes = ['All', 'PG', 'Single Room', '1BHK', '2BHK', '3BHK', 'Flat', 'Row House'];
 
     const fadeIn = {
         hidden: { opacity: 0, y: 20 },
@@ -301,6 +347,26 @@ const ExploreRooms = () => {
                                 <h3>{room.title}</h3>
                                 <p className="room-location">📍 {room.location}</p>
                                 <p className="room-price">₹{room.price?.toLocaleString()}<span>/month</span></p>
+
+                                <div className="room-meta">
+                                    <span className="post-time">{formatPostTime(room.createdAt)}</span>
+                                    <div
+                                        className="like-section"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleLike(room);
+                                        }}
+                                    >
+                                        <button
+                                            className={`like-btn ${room.likedBy?.includes(currentUser?.uid) ? 'liked' : ''}`}
+                                        // onClick removed - handled by parent
+                                        >
+                                            {room.likedBy?.includes(currentUser?.uid) ? '❤️' : '🤍'}
+                                        </button>
+                                        <span className="like-count">{room.likes || 0}</span>
+                                    </div>
+                                </div>
                             </div>
                             <div className="room-actions">
                                 <a

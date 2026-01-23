@@ -478,7 +478,9 @@ const AdminDashboard = () => {
                 ownerEmail: editingRoom ? editingRoom.ownerEmail : (currentUser?.email || 'admin'),
                 createdAt: editingRoom ? editingRoom.createdAt : serverTimestamp(),
                 updatedAt: serverTimestamp(),
-                status: 'active'
+                status: 'active',
+                likes: editingRoom ? (editingRoom.likes || 0) : 0,
+                likedBy: editingRoom ? (editingRoom.likedBy || []) : []
             };
 
             console.log('Saving room data:', roomData);
@@ -721,6 +723,7 @@ const AdminDashboard = () => {
                                         <option value="2BHK">2BHK</option>
                                         <option value="3BHK">3BHK</option>
                                         <option value="Flat">Flat</option>
+                                        <option value="Row House">Row House</option>
                                     </select>
                                     <label htmlFor="roomType">Room Type</label>
                                 </div>
@@ -924,6 +927,20 @@ const AdminDashboard = () => {
                                     <p className="room-location">📍 {room.location}</p>
                                     <p className="room-price">₹{room.price?.toLocaleString()}/month</p>
                                     <p className="room-phone">📞 {room.phone}</p>
+
+                                    <div className="admin-like-stats">
+                                        <p className="like-stat-count">❤️ {room.likes || 0} Likes</p>
+                                        {room.likedByEmails && room.likedByEmails.length > 0 && (
+                                            <details className="liked-by-details">
+                                                <summary>View Liked Users</summary>
+                                                <ul>
+                                                    {room.likedByEmails.map((email, idx) => (
+                                                        <li key={idx}>{email}</li>
+                                                    ))}
+                                                </ul>
+                                            </details>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="room-actions">
                                     <button
