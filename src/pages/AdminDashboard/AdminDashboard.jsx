@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,6 +16,16 @@ import {
 import { db, cloudinaryConfig } from '../../config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import './AdminDashboard.css';
+
+// Custom debounce hook to prevent excessive re-renders on input
+function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+}
 
 // Toast Notification Component
 const Toast = ({ message, type, onClose }) => {
@@ -147,15 +157,15 @@ const AdminDashboard = () => {
     const { currentUser, logout, userRole } = useAuth();
     const navigate = useNavigate();
 
-    // Toast helper functions
-    const showToast = (message, type = 'info') => {
+    // Toast helper functions - memoized to prevent unnecessary re-renders
+    const showToast = useCallback((message, type = 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
-    };
+    }, []);
 
-    const removeToast = (id) => {
+    const removeToast = useCallback((id) => {
         setToasts(prev => prev.filter(toast => toast.id !== id));
-    };
+    }, []);
 
     // Redirect if not admin
     useEffect(() => {
@@ -182,10 +192,22 @@ const AdminDashboard = () => {
         });
 
         return () => unsubscribe();
+    }, [showToast]);
+
+    // Use refs to track blob URLs for cleanup without causing re-renders
+    const videoPreviewRef = useRef(null);
+
+    // Cleanup blob URLs on component unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (videoPreviewRef.current) {
+                URL.revokeObjectURL(videoPreviewRef.current);
+            }
+        };
     }, []);
 
-    // Handle image selection with validation
-    const handleImageChange = (e) => {
+    // Handle image selection with validation - memoized
+    const handleImageChange = useCallback((e) => {
         const file = e.target.files[0];
         if (file) {
             // Validate file size (max 10MB)
@@ -205,10 +227,10 @@ const AdminDashboard = () => {
             };
             reader.readAsDataURL(file);
         }
-    };
+    }, [showToast]);
 
-    // Handle video selection with validation
-    const handleVideoChange = (e) => {
+    // Handle video selection with validation - memoized
+    const handleVideoChange = useCallback((e) => {
         const file = e.target.files[0];
         if (file) {
             // Validate file size (max 100MB)
@@ -221,10 +243,16 @@ const AdminDashboard = () => {
                 showToast('Please select a valid video file', 'warning');
                 return;
             }
+            // Revoke previous URL to prevent memory leak
+            if (videoPreviewRef.current) {
+                URL.revokeObjectURL(videoPreviewRef.current);
+            }
             setVideo(file);
-            setVideoPreview(URL.createObjectURL(file));
+            const newUrl = URL.createObjectURL(file);
+            videoPreviewRef.current = newUrl;
+            setVideoPreview(newUrl);
         }
-    };
+    }, [showToast]);
 
     const updateOverallProgress = () => {
         const { image, video } = fileProgressRef.current;
@@ -512,8 +540,7 @@ const AdminDashboard = () => {
             // Reset and close form
             resetForm();
             setShowForm(false);
-            create: false, // removed resetForm here as it is called after
-                showToast(`Room ${editingRoom ? 'updated' : 'posted'} successfully! 🎉`, 'success');
+            showToast(`Room ${editingRoom ? 'updated' : 'posted'} successfully! 🎉`, 'success');
 
         } catch (error) {
             console.error('Error posting room:', error);
@@ -525,7 +552,7 @@ const AdminDashboard = () => {
         }
     };
 
-    // Initiate delete (open modal)
+    // Initiate delete (open modal) - for rental rooms
     const handleDelete = (roomId, roomTitle) => {
         setRoomToDelete({ id: roomId, title: roomTitle });
         setShowDeleteModal(true);
@@ -541,8 +568,8 @@ const AdminDashboard = () => {
             setShowDeleteModal(false);
             setRoomToDelete(null);
         } catch (error) {
-            console.error('Error deleting room:', error);
-            showToast('Error deleting room. Please try again.', 'error');
+            console.error('Error deleting:', error);
+            showToast('Error deleting. Please try again.', 'error');
         }
     };
 
@@ -664,7 +691,7 @@ const AdminDashboard = () => {
                 </motion.div>
             </motion.div>
 
-            {/* Add Room Button */}
+            {/* Action Buttons */}
             <motion.div
                 className="action-bar"
                 initial={{ opacity: 0, x: -30 }}
@@ -677,7 +704,7 @@ const AdminDashboard = () => {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                 >
-                    {showForm ? '✕ Close Form' : '✨ Add New Room'}
+                    {showForm ? '✕ Close Form' : '🏠 Add New Room'}
                 </motion.button>
             </motion.div>
 
@@ -724,6 +751,10 @@ const AdminDashboard = () => {
                                         <option value="3BHK">3BHK</option>
                                         <option value="Flat">Flat</option>
                                         <option value="Row House">Row House</option>
+                                        <option value="Shop">Shop</option>
+                                        <option value="Plot">Plot</option>
+                                        <option value="Land">Land</option>
+                                        <option value="Farm">Farm</option>
                                     </select>
                                     <label htmlFor="roomType">Room Type</label>
                                 </div>
@@ -886,9 +917,9 @@ const AdminDashboard = () => {
                 )}
             </AnimatePresence>
 
-            {/* Rooms List */}
+            {/* Rental Rooms List */}
             <div className="rooms-section">
-                <h2>Your Posted Rooms</h2>
+                <h2>🏠 Rental Rooms</h2>
 
                 {loading ? (
                     <div className="loading">
@@ -898,7 +929,7 @@ const AdminDashboard = () => {
                 ) : rooms.length === 0 ? (
                     <div className="no-rooms">
                         <span className="no-rooms-icon">📭</span>
-                        <p>No rooms posted yet. Click "Add New Room" to get started!</p>
+                        <p>No rental rooms posted yet. Click "Add New Room" to get started!</p>
                     </div>
                 ) : (
                     <motion.div

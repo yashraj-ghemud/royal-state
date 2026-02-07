@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
@@ -8,6 +8,16 @@ import './ExploreRooms.css';
 
 // Placeholder image URL
 const PLACEHOLDER_IMAGE = 'https://placehold.co/400x300/1a1a2e/00d9ff?text=No+Image';
+
+// Custom debounce hook to prevent excessive re-renders
+function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+}
 
 // Helper to format timestamp
 const formatPostTime = (timestamp) => {
@@ -25,9 +35,32 @@ const formatPostTime = (timestamp) => {
     return postDate.toLocaleDateString();
 };
 
+// Animation variants (memoized outside component)
+const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1 }
+    }
+};
+
+const cardVariant = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { duration: 0.4, ease: "easeOut" }
+    }
+};
+
 const ExploreRooms = () => {
     const [rooms, setRooms] = useState([]);
-    const [filteredRooms, setFilteredRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [filterType, setFilterType] = useState('All');
@@ -35,6 +68,11 @@ const ExploreRooms = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+
+    // Debounce search and price inputs to prevent lag
+    const debouncedSearch = useDebounce(searchQuery, 300);
+    const debouncedMinPrice = useDebounce(minPrice, 300);
+    const debouncedMaxPrice = useDebounce(maxPrice, 300);
 
     // Maharashtra Districts
     const maharashtraDistricts = [
@@ -66,7 +104,6 @@ const ExploreRooms = () => {
                 ...doc.data()
             }));
             setRooms(roomsData);
-            setFilteredRooms(roomsData);
             setLoading(false);
         }, (error) => {
             console.error('Error fetching rooms:', error);
@@ -76,8 +113,8 @@ const ExploreRooms = () => {
         return () => unsubscribe();
     }, []);
 
-    // Filter rooms
-    useEffect(() => {
+    // Filter rooms - using memoized filtered result with debounced values
+    const filteredRooms = useMemo(() => {
         let filtered = rooms;
 
         // Filter by type
@@ -90,19 +127,19 @@ const ExploreRooms = () => {
             filtered = filtered.filter(room => room.district === filterDistrict);
         }
 
-        // Filter by price range (manual min/max)
-        const min = minPrice ? Number(minPrice) : 0;
-        const max = maxPrice ? Number(maxPrice) : Infinity;
-        if (minPrice || maxPrice) {
+        // Filter by price range (use debounced values)
+        const min = debouncedMinPrice ? Number(debouncedMinPrice) : 0;
+        const max = debouncedMaxPrice ? Number(debouncedMaxPrice) : Infinity;
+        if (debouncedMinPrice || debouncedMaxPrice) {
             filtered = filtered.filter(room => {
                 const price = room.price || 0;
                 return price >= min && price <= max;
             });
         }
 
-        // Filter by search query
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
+        // Filter by search query (use debounced value)
+        if (debouncedSearch) {
+            const query = debouncedSearch.toLowerCase();
             filtered = filtered.filter(room =>
                 room.title?.toLowerCase().includes(query) ||
                 room.location?.toLowerCase().includes(query) ||
@@ -111,8 +148,8 @@ const ExploreRooms = () => {
             );
         }
 
-        setFilteredRooms(filtered);
-    }, [filterType, filterDistrict, searchQuery, minPrice, maxPrice, rooms]);
+        return filtered;
+    }, [filterType, filterDistrict, debouncedSearch, debouncedMinPrice, debouncedMaxPrice, rooms]);
 
     // Logout
     const handleLogout = async () => {
@@ -154,30 +191,7 @@ const ExploreRooms = () => {
         }
     };
 
-    const roomTypes = ['All', 'PG', 'Single Room', '1BHK', '2BHK', '3BHK', 'Flat', 'Row House'];
-
-    const fadeIn = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-    };
-
-    const staggerContainer = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1 }
-        }
-    };
-
-    const cardVariant = {
-        hidden: { opacity: 0, y: 30, scale: 0.95 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: { duration: 0.4, ease: "easeOut" }
-        }
-    };
+    const roomTypes = ['All', 'PG', 'Single Room', '1BHK', '2BHK', '3BHK', 'Flat', 'Row House', 'Shop', 'Plot', 'Land', 'Farm'];
 
     return (
         <div className="explore-container">
