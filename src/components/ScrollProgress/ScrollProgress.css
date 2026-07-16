@@ -1,0 +1,66 @@
+/* ============================================
+   SCROLL PROGRESS COMPONENT
+   Gradient Progress Bar with Glow Effect
+   ============================================ */
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #D4AF37 0%,
+    #F4E4BC 25%,
+    #667eea 50%,
+    #D4AF37 75%,
+    #996515 100%
+  );
+  background-size: 200% 100%;
+  transform-origin: left center;
+  z-index: var(--z-scroll-progress, 9999);
+  opacity: 0;
+  transition: opacity var(--transition-base, 250ms cubic-bezier(0.22, 1, 0.36, 1));
+  pointer-events: none;
+}
+
+.scroll-progress.visible {
+  opacity: 1;
+}
+
+/* Animated gradient on progress bar */
+.scroll-progress.visible {
+  animation: gradient-shift 3s linear infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Subtle glow effect */
+.scroll-progress-glow {
+  position: absolute;
+  inset: -4px;
+  background: inherit;
+  filter: blur(8px);
+  opacity: 0.6;
+}
+
+/* Enhanced glow when near completion */
+.scroll-progress-glow::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 12px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(212, 175, 55, 0.8) 0%,
+    transparent 70%
+  );
+  border-radius: var(--radius-full);
+}
