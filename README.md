@@ -1,191 +1,108 @@
-# 🏠 RentEasy - Room Rental Application
+# royal-state
+> A single-repo React + Vite frontend for a room-rental app (branded RentEasy / Royal Stay) that uses Firebase (Auth, Firestore, Storage) for backend services.
 
-A modern, full-stack room rental application built with React + Vite and Firebase.
+## Overview
+A client-side single-page application built with React (Vite) that provides a room-listing and management UI. The repository contains the frontend app, Firebase configuration hooks, and deployment configuration for Netlify and Vercel.
 
-## 🚀 Features
+## What it does
+- Lets room owners (admins) post and manage room listings via an admin dashboard (admin pages are gated client-side).
+- Lets room seekers (customers) browse and filter rooms and contact owners.
+- Uses Firebase SDK for authentication, Firestore for room data, and Firebase Storage (or Cloudinary) for media.
+- Includes UX features such as a video background, custom cursor, and a back-to-top button.
 
-- **Video Background Landing Page** - Eye-catching homepage with scroll animations
-- **Smart Login System** - Role-based authentication (Admin/Customer)
-- **Admin Dashboard** - Post rooms with images, manage listings
-- **Customer Explore Page** - Browse rooms with filters and real-time updates
-- **Direct Call Feature** - One-click call to room owners
-- **Real-time Database** - Live updates using Firebase Firestore
+## Key capabilities
+- Role-based authentication flow with a client-side admin mode (AuthContext + ProtectedRoute).
+- Admin dashboard for creating and managing room posts.
+- Explore/Browse page for rooms with client-side filtering; intended real-time updates via Firestore.
+- Media handling support (Storage and optional Cloudinary configuration).
+- SPA-friendly deployment config for Netlify (netlify.toml) and Vercel (vercel.json).
+- UX components: VideoBackground, TargetCursor, BackToTop; animations via Framer Motion and GSAP; maps via react-leaflet.
 
-## 📁 Project Structure
+## Technology
+- React 18 + Vite
+- Firebase (Auth, Firestore, Storage)
+- Cloudinary (optional, env-driven)
+- Framer Motion, GSAP
+- Leaflet / react-leaflet
+- JavaScript (ESM), CSS
+- Netlify / Vercel deployment targets
 
-```
-my-rental-app/
-├── public/
-│   └── bg.mp4              # Background video (add your own)
-├── src/
-│   ├── config/
-│   │   └── firebaseConfig.js
-│   ├── context/
-│   │   └── AuthContext.jsx
-│   ├── components/
-│   │   └── ProtectedRoute.jsx
-│   ├── pages/
-│   │   ├── Home/
-│   │   │   ├── Home.jsx
-│   │   │   └── Home.css
-│   │   ├── Auth/
-│   │   │   ├── Auth.jsx
-│   │   │   └── Auth.css
-│   │   ├── AdminDashboard/
-│   │   │   ├── AdminDashboard.jsx
-│   │   │   └── AdminDashboard.css
-│   │   └── ExploreRooms/
-│   │       ├── ExploreRooms.jsx
-│   │       └── ExploreRooms.css
-│   ├── App.jsx
-│   ├── App.css
-│   ├── index.css
-│   └── main.jsx
-├── package.json
-└── README.md
-```
+## Repository structure
+Key files and folders (as present in repo):
+- public/
+  - bg.mp4 (background video expected in public/)
+- src/
+  - config/firebaseConfig.js
+  - context/AuthContext.jsx
+  - components/ProtectedRoute.jsx
+  - components/VideoBackground.jsx
+  - components/TargetCursor.jsx
+  - components/BackToTop/BackToTop.jsx
+  - pages/ (Home, Auth, AdminDashboard, ExploreRooms)
+  - App.jsx, main.jsx
+- package.json (dev/build/lint/preview scripts)
+- netlify.toml, vercel.json
+- eslint.config.js, vite.config.js
+- README.md (this file)
 
-## 🛠️ Setup Instructions
+A fuller tree is shown in the repository README excerpt if you need more detail.
 
-### 1. Firebase Setup
+## Getting started
+The repository includes npm scripts for local development and build:
+- npm run dev — start Vite development server (script present in package.json)
+- npm run build — build for production
+- npm run preview — preview the build
+- npm run lint — run ESLint
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable **Authentication** → Email/Password
-4. Enable **Firestore Database**
-5. Enable **Storage**
-6. Get your config from Project Settings → Web App
+The existing README contains step-by-step Firebase setup guidance (create project, enable Email/Password auth, enable Firestore and Storage) and an example firebaseConfig object. To run locally (evidence in README and package.json):
+1. Install dependencies: npm install
+2. Start dev server: npm run dev
 
-### 2. Add Firebase Config
+If you follow those steps, inspect src/ to confirm configuration and implementation details.
 
-Edit `src/config/firebaseConfig.js`:
+## Configuration
+- Firebase and Cloudinary configuration are read from environment variables via import.meta.env in the code (see src/config/firebaseConfig.js). The repo does not contain a .env.example; that file is absent.
+- The background video is expected at public/bg.mp4 (the README instructs adding it there).
+- Deployment configuration files are present at netlify.toml and vercel.json to support SPA routing.
 
-```javascript
-export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-```
+To inspect runtime configuration and required env keys, review:
+- src/config/firebaseConfig.js
+- any cloudinary-related config referenced from src/config/firebaseConfig.js or other src/config files
+- netlify.toml and vercel.json for deploy-time settings
 
-### 3. Add Background Video
+## Development and quality notes
+- package.json lists dependencies and devDependencies (firebase, framer-motion, gsap, leaflet, react, react-dom, react-router-dom, vite, eslint, etc.).
+- ESLint is configured (eslint.config.js) and a lint script is provided, but:
+  - There are no automated tests (no test files or test framework present).
+  - No CI workflow files for GitHub Actions are present; only Netlify/Vercel configs exist.
+  - No pre-commit hooks or test runners are included in the repository evidence.
+- The app is componentized and uses AuthContext for auth state and ProtectedRoute for client-side route protection (see src/context/AuthContext.jsx and src/components/ProtectedRoute.jsx).
 
-Place your `bg.mp4` video file in the `public/` folder.
+## Safety and responsible use
+Applicable security findings (present in repository code and README):
+- The repository contains a client-side “admin” flow implemented in src/context/AuthContext.jsx that can be bypassed via localStorage and hardcoded client checks. This allows elevation to admin in the client and is insufficient for production admin privileges.
+- ProtectedRoute enforces access based on client-side state (userRole), which can be spoofed if admin checks remain client-only.
+- Firestore and Storage security rules are provided as examples in the README but are not enforced by the client; production rules are not committed to the repo.
+- Environment secrets (Firebase and Cloudinary keys) are expected via import.meta.env; there is no .env.example or documentation in-repo describing required VITE_* variables.
+- No evidence of server-side validation or file-type/size checks for uploads; uploads may be sent directly to Storage/Cloudinary.
+- No automated tests, CI, or server-side protections (e.g., Firebase custom claims, App Check, Cloud Functions) are present in the repository.
 
-### 4. Firestore Security Rules
+Recommended immediate mitigations (referenced from the project audit and present in repo suggestions):
+- Remove client-side hardcoded admin credentials and localStorage-based admin flags from src/context/AuthContext.jsx.
+- Use Firebase Authentication with server-side verification (custom claims) for admin privileges and validate tokens server-side where any admin-only mutation occurs.
+- Add a .env.example listing required VITE_* variables referenced in src/config/firebaseConfig.js.
+- Commit and enforce Firestore and Storage rules in the repo (suggested path: firebase/rules/).
+- Add basic input validation and file checks for uploads client-side and enforce server-side checks where possible.
 
-In Firebase Console → Firestore → Rules:
+## Contributing
+- The repo contains no explicit CONTRIBUTING.md; contributions are expected via standard GitHub flow (issues and pull requests).
+- Useful files to inspect before contributing:
+  - src/context/AuthContext.jsx (auth logic and admin flow)
+  - src/components/ProtectedRoute.jsx (route protection)
+  - src/config/firebaseConfig.js (env usage and Firebase initialization)
+  - package.json and eslint.config.js (scripts and linting)
+  - netlify.toml, vercel.json (deployment routing)
+- If you plan to change authentication or security-critical code, prefer implementing server-side verification (Firebase custom claims / Cloud Functions) rather than client-only checks.
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users collection
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Rooms collection
-    match /rooms/{roomId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && 
-        request.auth.uid == resource.data.ownerId;
-    }
-  }
-}
-```
-
-### 5. Storage Rules
-
-In Firebase Console → Storage → Rules:
-
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /rooms/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
-
-### 6. Run the App
-
-```bash
-npm install
-npm run dev
-```
-
-## 🌐 Deployment (Netlify)
-
-### Method 1: GitHub + Netlify
-
-1. Push code to GitHub
-2. Go to [Netlify](https://netlify.com)
-3. Click "New Site from Git"
-4. Select your GitHub repo
-5. Build command: `npm run build`
-6. Publish directory: `dist`
-7. Click "Deploy"
-
-### Method 2: Netlify CLI
-
-```bash
-npm install -g netlify-cli
-npm run build
-netlify deploy --prod --dir=dist
-```
-
-## 📱 User Flow
-
-### For Room Seekers (Customers):
-1. Sign up as "Room Seeker"
-2. Browse available rooms
-3. Filter by type (PG, 1BHK, etc.)
-4. Click on room to see details
-5. Call owner directly
-
-### For Room Owners (Admins):
-1. Sign up as "Room Owner"
-2. Access Admin Dashboard
-3. Post new rooms with images
-4. Manage/delete listings
-5. Track total posts
-
-## 🔧 Tech Stack
-
-- **Frontend**: React + Vite
-- **Styling**: CSS3 with Glassmorphism
-- **Animations**: Framer Motion
-- **Routing**: React Router DOM
-- **Backend**: Firebase (Auth, Firestore, Storage)
-- **Deployment**: Netlify
-
-## 📞 Contact Button Code
-
-```jsx
-<a href={`tel:${room.phone}`}>Call Now</a>
-```
-
-## 🎨 Customization
-
-- Change colors in CSS files (primary gradient: `#667eea` to `#764ba2`)
-- Replace `bg.mp4` with your own video
-- Edit text content in Home.jsx
-- Modify room types in AdminDashboard.jsx
-
-## 📄 License
-
-MIT License - Feel free to use for personal and commercial projects.
-
----
-
-Made with ❤️ for RentEasy
-
+## License
+The repository README includes an MIT License notice. (The repository does not contain a separate LICENSE file in the supplied evidence.)
